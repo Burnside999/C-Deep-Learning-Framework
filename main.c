@@ -5,16 +5,37 @@
 #include "mnist_test_data_tiny.h"
 #include <time.h>
 
-float Layer0Weight[] = Layer0_weight_arr;
-float Layer0Bias[] = Layer0_bias_arr;
-float Layer3Weight[] = Layer3_weight_arr;
-float Layer3Bias[] = Layer3_bias_arr;
-float Layer7Weight[] = Layer7_weight_arr;
-float Layer7Bias[] = Layer7_bias_arr;
-float Layer9Weight[] = Layer9_weight_arr;
-float Layer9Bias[] = Layer9_bias_arr;
-float Layer11Weight[] = Layer11_weight_arr;
-float Layer11Bias[] = Layer11_bias_arr;
+#pragma DATA_SECTION (Layer0Weight, ".weight");
+#pragma DATA_SECTION (Layer3Weight, ".weight");
+#pragma DATA_SECTION (Layer7Weight, ".weight");
+#pragma DATA_SECTION (Layer9Weight, ".weight");
+#pragma DATA_SECTION (Layer11Weight, ".weight");
+#pragma DATA_SECTION (Layer0Bias, ".weight");
+#pragma DATA_SECTION (Layer3Bias, ".weight");
+#pragma DATA_SECTION (Layer7Bias, ".weight");
+#pragma DATA_SECTION (Layer9Bias, ".weight");
+#pragma DATA_SECTION (Layer11Bias, ".weight");
+#pragma DATA_ALIGN (Layer0Weight, 32);
+#pragma DATA_ALIGN (Layer3Weight, 32);
+#pragma DATA_ALIGN (Layer7Weight, 32);
+#pragma DATA_ALIGN (Layer9Weight, 32);
+#pragma DATA_ALIGN (Layer11Weight, 32);
+#pragma DATA_ALIGN (Layer0Bias, 32);
+#pragma DATA_ALIGN (Layer3Bias, 32);
+#pragma DATA_ALIGN (Layer7Bias, 32);
+#pragma DATA_ALIGN (Layer9Bias, 32);
+#pragma DATA_ALIGN (Layer11Bias, 32);
+
+const float Layer0Weight[] = Layer0_weight_arr;
+const float Layer0Bias[] = Layer0_bias_arr;
+const float Layer3Weight[] = Layer3_weight_arr;
+const float Layer3Bias[] = Layer3_bias_arr;
+const float Layer7Weight[] = Layer7_weight_arr;
+const float Layer7Bias[] = Layer7_bias_arr;
+const float Layer9Weight[] = Layer9_weight_arr;
+const float Layer9Bias[] = Layer9_bias_arr;
+const float Layer11Weight[] = Layer11_weight_arr;
+const float Layer11Bias[] = Layer11_bias_arr;
 
 /*
 Conv2d(1, 6, 5),
@@ -115,54 +136,45 @@ void InitNet(Network *net) {
 }
 
 int main() {
-    net = malloc(sizeof(Network));
-    net->input = malloc(sizeof(Tensor));
-    net->output = malloc(sizeof(Tensor));
+	int i = 0, j = 0, k = 0; // loop
+	int correct = 0;
+	int aim;
+	float maxval;
+	int maxpos;
+	
+    net = (Network *)malloc(sizeof(Network));
+    net->input = (Tensor *)malloc(sizeof(Tensor));
+    net->output = (Tensor *)malloc(sizeof(Tensor));
+	net->layer_num = 0;
     InitNet(net);
-    int correct = 0;
-    clock_t preprocess_start, preprocess_end;
-    clock_t inference_start, inference_end;
-    clock_t postprocess_start, postprocess_end;
-    float preprocess_time_used = 0, inference_time_used = 0, postprocess_time_used = 0;
-    for (int i = 0; i < num_images; i++) {
-        preprocess_start = clock();
-        net->input->data = malloc(28 * 28 * sizeof(float));
+    for (i = 0; i < num_images; i++) {
+        net->input->data = (float *)malloc(28 * 28 * sizeof(float));
         net->input->dims[0] = 1;
         net->input->dims[1] = 1;
         net->input->dims[2] = 28;
         net->input->dims[3] = 28;
         net->input->size = 28 * 28;
-        for (int j = 0; j < 28; j++) {
-            for (int k = 0; k < 28; k++) {
+        for (j = 0; j < 28; j++) {
+            for (k = 0; k < 28; k++) {
                 net->input->data[j * 28 + k] = (1.0 * mnist_test_images[i * 28 * 28 + j * 28 + k] / 255 - 0.1307) / 0.3081; // Normalize
             }
         }
-        int aim = mnist_test_labels[i];
-        preprocess_end = clock();
-        inference_start = clock();
+        aim = mnist_test_labels[i];
         Forward(net);
-        inference_end = clock();
-        postprocess_start = clock();
-        float maxval = -INFINITY;
-        int maxpos = 0;
-        for (int j = 0; j < 10; j++) {
+        maxval = -INFINITY;
+        maxpos = 0;
+        for (j = 0; j < 10; j++) {
             if (net->output->data[j] > maxval) {
                 maxval = net->output->data[j];
                 maxpos = j;
             }
         }
-        // printf("\nPredict: %d\n", maxpos);
-        if (maxpos == mnist_test_labels[i]) {
+        printf("Aim: %d\nPredict: %d\n", aim, maxpos);
+        if (maxpos == aim) {
             correct++;
         }
-        // printf("dims=[%d, %d, %d, %d] sz=%d\n", net->output->dims[0], net->output->dims[1], net->output->dims[2], net->output->dims[3], net->output->size);
         free(net->output->data);
-        postprocess_end = clock();
-        preprocess_time_used += (float)(preprocess_end - preprocess_start) / CLOCKS_PER_SEC;
-        inference_time_used += (float)(inference_end - inference_start) / CLOCKS_PER_SEC;
-        postprocess_time_used += (float)(postprocess_end - postprocess_start) / CLOCKS_PER_SEC;
     }
-    printf("Accuracy: %.3f\%\n", 100.0 * correct / num_images);
-    printf("Preprocess: %.3fs, Inference: %.3fs, Postprocess: %.3fs\n", preprocess_time_used, inference_time_used, postprocess_time_used);
+    printf("Accuracy: %.3f precent\n", 100.0 * correct / num_images);
     return 0;
 }

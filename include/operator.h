@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define INFINITY 2147483647
+
 typedef struct Tensor {
     float* data;
     int dims[4];

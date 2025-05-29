@@ -7,7 +7,7 @@
 
 #define MAX_LAYERS 20
 
-typedef struct {
+typedef struct Network {
     int layer_num;
     Operator* ops[MAX_LAYERS];
     Tensor* input;

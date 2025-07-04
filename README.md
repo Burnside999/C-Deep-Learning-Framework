@@ -31,3 +31,5 @@ model = torch.nn.Sequential(
     torch.nn.Linear(84, 10)
 )
 ```
+
+`mnist_test_data.h` and `model_params.h` can be downloaded from [Google Drive](https://drive.google.com/drive/folders/1OEVuVa6yX0Wuywi4_JqSAdEQgXYPtCmK?usp=drive_link).
